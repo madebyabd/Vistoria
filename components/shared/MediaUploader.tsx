@@ -147,8 +147,6 @@ const MediaUploader = ({
       options={{
         multiple: false,
         resourceType: "image",
-        // Try multiple tagging services (Cloudinary will use what's enabled in your account)
-        categorization: "imagga_tagging,google_tagging",
       }}
       onSuccess={onUploadSuccessHandler}
       onError={onUploadErrorHandler}
