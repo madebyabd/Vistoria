@@ -25,6 +25,12 @@ const Page = async ({ params: { id } }: SearchParamProps) => {
   });
   const image = await getImageById(id);
 
+  const isOwner = image.author.clerkId === userId;
+
+  if (!isOwner) {
+    redirect(`/transformations/${id}`);
+  }
+
   const transformation =
     transformationTypes[image.transformationType as TransformationTypeKey];
 

@@ -35,14 +35,28 @@ const Credits = async () => {
       <section>
         <ul className="credits-list">
           {plans.map((plan) => (
-            <li key={plan.name} className="credits-item">
+            <li
+              key={plan.name}
+              className={`credits-item ${
+                plan.name === "Pro Package" ? "credits-item-featured" : ""
+              }`}
+            >
+              {plan.name === "Pro Package" && (
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                  <span className="rounded-full bg-gradient-to-r from-purple-400 to-cyan-400 px-4 py-1.5 text-sm font-semibold text-white shadow-[0_8px_30px_rgba(99,102,241,0.5)]">
+                    Most Popular
+                  </span>
+                </div>
+              )}
               <div className="flex-center flex-col gap-3">
                 <Image src={plan.icon} alt="check" width={50} height={50} />
-                <p className="p-20-semibold mt-2 text-purple-500">
+                <p className="p-20-semibold mt-2 bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
                   {plan.name}
                 </p>
-                <p className="h1-semibold text-dark-600">${plan.price}</p>
-                <p className="p-16-regular">{plan.credits} Credits</p>
+                <p className="h1-semibold text-white">${plan.price}</p>
+                <p className="p-16-regular text-cyan-300">
+                  {plan.credits} Credits
+                </p>
               </div>
 
               {/* Inclusions */}
@@ -59,8 +73,21 @@ const Credits = async () => {
                       alt="check"
                       width={24}
                       height={24}
+                      className={
+                        inclusion.isIncluded
+                          ? "drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]"
+                          : ""
+                      }
                     />
-                    <p className="p-16-regular">{inclusion.label}</p>
+                    <p
+                      className={`p-16-regular ${
+                        inclusion.isIncluded
+                          ? "text-slate-200"
+                          : "text-slate-500"
+                      }`}
+                    >
+                      {inclusion.label}
+                    </p>
                   </li>
                 ))}
               </ul>

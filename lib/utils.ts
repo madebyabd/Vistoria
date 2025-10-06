@@ -110,7 +110,11 @@ export const getImageSize = (
 };
 
 // DOWNLOAD IMAGE
-export const download = (url: string, filename: string) => {
+export const download = (
+  url: string,
+  filename: string,
+  format: string = "jpg"
+) => {
   if (!url) {
     throw new Error("Resource URL not provided! You need to provide one");
   }
@@ -123,16 +127,19 @@ export const download = (url: string, filename: string) => {
       a.href = blobURL;
 
       if (filename && filename.length)
-        a.download = `${filename.replace(" ", "_")}.png`;
+        a.download = `${filename.replace(" ", "_")}.${format}`;
       document.body.appendChild(a);
       a.click();
+
+      // Clean up the blob URL after download
+      setTimeout(() => URL.revokeObjectURL(blobURL), 100);
     })
     .catch((error) => console.log({ error }));
 };
 
 // DEEP MERGE OBJECTS
 export const deepMergeObjects = (obj1: any, obj2: any) => {
-  if(obj2 === null || obj2 === undefined) {
+  if (obj2 === null || obj2 === undefined) {
     return obj1;
   }
 

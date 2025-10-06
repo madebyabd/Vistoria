@@ -24,11 +24,13 @@ export const Collection = ({
   images,
   totalPages = 1,
   page,
+  hideAuthor = false,
 }: {
   images: IImage[];
   totalPages?: number;
   page: number;
   hasSearch?: boolean;
+  hideAuthor?: boolean;
 }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -56,7 +58,7 @@ export const Collection = ({
       {images.length > 0 ? (
         <ul className="collection-list">
           {images.map((image) => (
-            <Card image={image} key={image._id} />
+            <Card image={image} key={image._id} hideAuthor={hideAuthor} />
           ))}
         </ul>
       ) : (
@@ -94,7 +96,13 @@ export const Collection = ({
   );
 };
 
-const Card = ({ image }: { image: IImage }) => {
+const Card = ({
+  image,
+  hideAuthor = false,
+}: {
+  image: IImage;
+  hideAuthor?: boolean;
+}) => {
   return (
     <li>
       <Link
@@ -132,6 +140,9 @@ const Card = ({ image }: { image: IImage }) => {
               height={24}
               className="drop-shadow-[0_0_12px_rgba(99,102,241,0.65)]"
             />
+            {!hideAuthor && image.author?.firstName && (
+              <span className="p-16-regular">{image.author.firstName}</span>
+            )}
           </div>
         </div>
       </Link>

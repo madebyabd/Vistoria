@@ -39,6 +39,7 @@ import { getCldImageUrl } from "next-cloudinary";
 import { addImage, updateImage } from "@/lib/actions/image.actions";
 import { useRouter } from "next/navigation";
 import { InsufficientCreditsModal } from "./InsufficientCreditsModal";
+import clsx from "clsx";
 
 export const formSchema = z.object({
   title: z.string(),
@@ -46,6 +47,7 @@ export const formSchema = z.object({
   color: z.string().optional(),
   prompt: z.string().optional(),
   publicId: z.string(),
+  isPublic: z.boolean().default(false),
 });
 
 const TransformationForm = ({
@@ -74,6 +76,7 @@ const TransformationForm = ({
           color: data?.color,
           prompt: data?.prompt,
           publicId: data?.publicId,
+          isPublic: data?.isPublic ?? false,
         }
       : defaultValues;
 
@@ -107,7 +110,14 @@ const TransformationForm = ({
         aspectRatio: values.aspectRatio,
         prompt: values.prompt,
         color: values.color,
+        tags: image?.tags || [],
+        isPublic: values.isPublic,
       };
+
+      console.log(
+        "[TransformationForm] Submitting with isPublic:",
+        values.isPublic
+      );
 
       if (action === "Add") {
         try {
@@ -322,6 +332,69 @@ const TransformationForm = ({
             transformationConfig={transformationConfig}
           />
         </div>
+
+        <FormField
+          control={form.control}
+          name="isPublic"
+          render={({ field }) => (
+            <FormItem className="flex items-start gap-3 rounded-2xl border border-white/10 bg-card/60 p-4 shadow-[0_12px_35px_rgba(15,23,42,0.35)]">
+              <FormControl>
+                <button
+                  type="button"
+                  className={clsx(
+                    "mt-1 flex size-6 items-center justify-center rounded-md border transition-colors",
+                    field.value === true
+                      ? "border-purple-400 bg-purple-500/80 text-white shadow-[0_0_12px_rgba(99,102,241,0.55)]"
+                      : "border-white/30 bg-transparent",
+                    !image && "cursor-not-allowed opacity-40"
+                  )}
+                  onClick={() => {
+                    if (image) {
+                      const newValue = field.value !== true;
+                      console.log(
+                        "[Checkbox] Toggling isPublic from",
+                        field.value,
+                        "to",
+                        newValue
+                      );
+                      field.onChange(newValue);
+                    }
+                  }}
+                  aria-pressed={field.value === true}
+                  aria-label="Toggle public visibility"
+                  disabled={!image}
+                >
+                  {field.value === true && (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.704 5.29a1 1 0 010 1.414l-7.25 7.25a1 1 0 01-1.414 0l-3.25-3.25a1 1 0 111.414-1.414l2.543 2.543 6.543-6.543a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  )}
+                </button>
+              </FormControl>
+              <div className="space-y-1">
+                <FormLabel className="p-16-semibold">
+                  Share with community
+                </FormLabel>
+                <FormDescription className="p-16-regular">
+                  Keep unchecked to store privately. Enable to feature
+                  anonymously on Recent Synths.
+                  {!image &&
+                    " (option unlocks after a transformation is generated)"}
+                </FormDescription>
+                <FormMessage />
+              </div>
+            </FormItem>
+          )}
+        />
 
         <div className="flex flex-col gap-4 sm:flex-row sm:gap-6">
           <Button

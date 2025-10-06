@@ -20,15 +20,22 @@ const TransformedImage = ({
   ) => {
     e.preventDefault();
 
-    download(
-      getCldImageUrl({
-        width: image?.width,
-        height: image?.height,
-        src: image?.publicId,
-        ...transformationConfig,
-      }),
-      title
-    );
+    // Determine format based on transformation type
+    const needsTransparency = type === "removeBackground" || type === "remove";
+    const format = needsTransparency ? "png" : "jpg";
+
+    // Build download URL with proper settings
+    const downloadUrl = getCldImageUrl({
+      width: image?.width,
+      height: image?.height,
+      src: image?.publicId,
+      ...transformationConfig,
+      format: format,
+      quality: type === "restore" ? "auto:best" : "auto:good",
+      flags: needsTransparency ? undefined : "progressive",
+    });
+
+    download(downloadUrl, title, format);
   };
 
   return (

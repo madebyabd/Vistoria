@@ -180,6 +180,24 @@ export const aspectRatioOptions = {
     width: 1000,
     height: 1778,
   },
+  "4:3": {
+    aspectRatio: "4:3",
+    label: "Standard Landscape (4:3)",
+    width: 1334,
+    height: 1000,
+  },
+  "16:9": {
+    aspectRatio: "16:9",
+    label: "Widescreen Landscape (16:9)",
+    width: 1778,
+    height: 1000,
+  },
+  "21:9": {
+    aspectRatio: "21:9",
+    label: "Ultrawide Landscape (21:9)",
+    width: 2334,
+    height: 1000,
+  },
 };
 
 export const defaultValues = {
@@ -188,6 +206,7 @@ export const defaultValues = {
   color: "",
   prompt: "",
   publicId: "",
+  isPublic: false,
 };
 
 export const creditFee = -1;

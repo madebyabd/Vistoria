@@ -5,6 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { HeroHeading } from "@/components/shared/HeroHeading";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const Home = async ({ searchParams }: SearchParamProps) => {
   const page = Number(searchParams?.page) || 1;
   const searchQuery = (searchParams?.query as string) || "";
@@ -14,10 +17,7 @@ const Home = async ({ searchParams }: SearchParamProps) => {
   return (
     <>
       <section className="home">
-        <HeroHeading
-          text="Shape Tomorrow’s Visuals with Vistoria"
-          className="!text-left pl-6"
-        />
+        <HeroHeading text="Shape Tomorrow's Visuals with Vistoria" />
         <ul className="flex-center w-full gap-20">
           {navLinks.slice(1, 5).map((link) => (
             <Link
@@ -40,6 +40,7 @@ const Home = async ({ searchParams }: SearchParamProps) => {
           images={images?.data}
           totalPages={images?.totalPage}
           page={page}
+          hideAuthor
         />
       </section>
     </>

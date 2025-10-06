@@ -37,19 +37,96 @@ const MediaUploader = ({
   }
 
   const onUploadSuccessHandler = (result: any) => {
+    // Debug: Log full response to see what we get
+    console.log("🔍 [MediaUploader] Full Cloudinary response:", result);
+    console.log("📋 [MediaUploader] Info object:", result?.info);
+    console.log("🏷️  [MediaUploader] Tags:", result?.info?.tags);
+    console.log(
+      "🤖 [MediaUploader] Categorization:",
+      result?.info?.categorization
+    );
+
+    // Extract AI-generated tags if available
+    const tags = result?.info?.tags || [];
+    const categorization = result?.info?.categorization;
+
+    // Try to extract tags from categorization if tags are empty
+    let finalTags = tags;
+    let taggingMethod = "none";
+
+    if (categorization) {
+      console.log(
+        "🔄 [MediaUploader] Extracting from categorization:",
+        categorization
+      );
+
+      // Imagga tagging returns categorization in this format
+      if (categorization.imagga_tagging?.data) {
+        finalTags = categorization.imagga_tagging.data
+          .filter((item: any) => item.confidence && item.confidence > 50) // Only tags with >50% confidence
+          .map((item: any) => item.tag?.en || item.tag);
+        taggingMethod = "imagga";
+        console.log("✅ [MediaUploader] Imagga tags extracted:", finalTags);
+      }
+      // Google tagging (fallback if user switches)
+      else if (categorization.google_tagging?.data) {
+        finalTags = categorization.google_tagging.data.map(
+          (item: any) => item.tag
+        );
+        taggingMethod = "google";
+        console.log("✅ [MediaUploader] Google tags extracted:", finalTags);
+      } else {
+        console.warn(
+          "⚠️ [MediaUploader] Categorization received but no tags found. This may mean:"
+        );
+        console.warn("   - Imagga/Google add-on is not enabled in Cloudinary");
+        console.warn("   - Upload preset doesn't have categorization enabled");
+        console.warn(
+          "   - Go to Cloudinary Dashboard > Settings > Add-ons to enable"
+        );
+      }
+    } else {
+      console.warn(
+        "⚠️ [MediaUploader] No categorization data received from Cloudinary"
+      );
+      console.warn(
+        "   To enable AI tagging, enable Imagga or Google Vision in Cloudinary:"
+      );
+      console.warn("   1. Go to Cloudinary Dashboard > Settings > Add-ons");
+      console.warn(
+        "   2. Enable 'Imagga Auto Tagging' or 'Google Auto Tagging'"
+      );
+      console.warn(
+        "   3. Make sure your upload preset has categorization enabled"
+      );
+    }
+
+    if (tags.length > 0 && finalTags.length === 0) {
+      finalTags = tags;
+      taggingMethod = "cloudinary";
+    }
+
+    console.log(`✅ [MediaUploader] Final tags (${taggingMethod}):`, finalTags);
+
     setImage((prevState: any) => ({
       ...prevState,
       publicId: result?.info?.public_id,
       width: result?.info?.width,
       height: result?.info?.height,
       secureURL: result?.info?.secure_url,
+      tags: finalTags,
     }));
 
     onValueChange(result?.info?.public_id);
 
     toast({
       title: "Image uploaded successfully",
-      description: "1 credit was deducted from your account",
+      description:
+        finalTags.length > 0
+          ? `🏷️ Tagged: ${finalTags.slice(0, 3).join(", ")}${
+              finalTags.length > 3 ? "..." : ""
+            }`
+          : "Ready for transformation",
       duration: 5000,
       className: "success-toast",
     });
@@ -70,6 +147,8 @@ const MediaUploader = ({
       options={{
         multiple: false,
         resourceType: "image",
+        // Try multiple tagging services (Cloudinary will use what's enabled in your account)
+        categorization: "imagga_tagging,google_tagging",
       }}
       onSuccess={onUploadSuccessHandler}
       onError={onUploadErrorHandler}

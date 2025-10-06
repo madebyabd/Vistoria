@@ -84,7 +84,7 @@
 }
 
 .root-container {
-  @apply mt-20 flex-1 overflow-auto px-6 py-10 lg:mt-0 lg:max-h-screen lg:px-12 lg:py-12;
+  @apply mt-20 flex-1 overflow-auto px-6 py-10 lg:mt-16 lg:max-h-screen lg:px-12 lg:py-12;
 }
 
 /* ========================================== TAILWIND STYLES */
@@ -167,7 +167,15 @@
 
   /* =====  SHADCN OVERRIDES */
   .button {
-    @apply relative overflow-hidden py-4 px-6 flex-center gap-3 rounded-full p-16-semibold text-foreground transition-all duration-300 ease-out before:absolute before:inset-0 before:bg-vistoria-gradient before:opacity-90 before:transition-opacity before:duration-300 hover:before:opacity-100 after:absolute after:inset-[-2px] after:rounded-full after:border after:border-cyan-300/40 after:opacity-0 hover:after:opacity-100 focus-visible:ring-0 focus-visible:outline-none;
+    @apply relative overflow-hidden py-4 px-6 flex-center gap-3 rounded-full p-16-semibold text-white transition-all duration-300 ease-out before:absolute before:inset-0 before:bg-vistoria-gradient before:opacity-90 before:transition-opacity before:duration-300 hover:before:opacity-100 after:absolute after:inset-[-2px] after:rounded-full after:border after:border-cyan-300/40 after:opacity-0 hover:after:opacity-100 focus-visible:ring-0 focus-visible:outline-none;
+  }
+
+  .button > *,
+  .button span,
+  .button a {
+    position: relative;
+    z-index: 10;
+    color: white;
   }
 
   .dropdown-content {
@@ -187,7 +195,15 @@
   }
 
   .submit-button {
-    @apply relative overflow-hidden rounded-full py-4 px-6 p-16-semibold h-[50px] w-full md:h-[54px] text-foreground bg-vistoria-gradient shadow-[0_12px_40px_rgba(99,102,241,0.45)] transition-transform duration-300 hover:-translate-y-[2px] focus-visible:ring-0 focus-visible:outline-none;
+    @apply relative overflow-hidden rounded-full py-4 px-6 p-16-semibold h-[50px] w-full md:h-[54px] !text-white bg-vistoria-gradient shadow-[0_12px_40px_rgba(99,102,241,0.45)] transition-transform duration-300 hover:-translate-y-[2px] focus-visible:ring-0 focus-visible:outline-none;
+  }
+
+  .submit-button > *,
+  .submit-button span,
+  .submit-button a {
+    position: relative;
+    z-index: 10;
+    color: white !important;
   }
 
   .select-field {
@@ -224,7 +240,7 @@
   }
 
   .home-heading {
-    @apply relative z-10 h1-semibold max-w-[540px] text-left text-foreground drop-shadow-[0_0_22px_rgba(34,211,238,0.35)] pl-6;
+    @apply relative z-10 h1-semibold max-w-[540px] text-center text-foreground drop-shadow-[0_0_22px_rgba(34,211,238,0.35)] mx-auto;
   }
 
   .hero-heading-caret {
@@ -249,11 +265,62 @@
   }
 
   .credits-item {
-    @apply w-full rounded-[20px] border border-white/5 bg-card/80 p-8 shadow-[0_25px_80px_rgba(15,23,42,0.7)] backdrop-blur-xl transition-transform duration-300 hover:-translate-y-1;
+    @apply relative w-full rounded-[20px] border-2 border-purple-400/20 bg-gradient-to-br from-[#1a2642] to-[#0f172a] p-8 shadow-[0_25px_80px_rgba(99,102,241,0.25)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-2 hover:border-purple-400/40 hover:shadow-[0_30px_90px_rgba(99,102,241,0.4)];
+  }
+
+  .credits-item::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    padding: 2px;
+    background: linear-gradient(
+      135deg,
+      rgba(99, 102, 241, 0.3),
+      rgba(34, 211, 238, 0.3)
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  .credits-item:hover::before {
+    opacity: 1;
+  }
+
+  .credits-item-featured {
+    @apply border-cyan-400/40 bg-gradient-to-br from-[#1e2d4d] to-[#0f172a] shadow-[0_30px_90px_rgba(34,211,238,0.35)];
+  }
+
+  .credits-item-featured::after {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: 20px;
+    background: linear-gradient(
+      135deg,
+      rgba(99, 102, 241, 0.4),
+      rgba(34, 211, 238, 0.4)
+    );
+    z-index: -1;
+    opacity: 0.6;
+    pointer-events: none;
   }
 
   .credits-btn {
-    @apply w-full rounded-full bg-vistoria-gradient text-foreground hover:text-foreground;
+    @apply w-full rounded-full bg-vistoria-gradient !text-white hover:!text-white;
+  }
+
+  .credits-btn > *,
+  .credits-btn span,
+  .credits-btn a {
+    position: relative;
+    z-index: 10;
+    color: white !important;
   }
 
   /* Profile Page */
@@ -289,7 +356,16 @@
   }
 
   .collection-btn {
-    @apply button w-32 bg-vistoria-gradient text-foreground;
+    @apply button w-32 bg-vistoria-gradient !text-white;
+  }
+
+  .collection-btn > *,
+  .collection-btn span,
+  .collection-btn a,
+  .collection-btn svg {
+    position: relative;
+    z-index: 10;
+    color: white !important;
   }
 
   .collection-card {
@@ -318,6 +394,15 @@
     @apply mt-8 flex w-full flex-col items-start gap-5;
   }
 
+  /* TopBar Component (Desktop Only - Top Right) */
+  .topbar {
+    @apply fixed top-0 right-0 z-30 hidden h-16 border-b border-white/10 bg-[#0B1222]/95 shadow-[0_8px_32px_rgba(8,15,32,0.4)] backdrop-blur-xl lg:left-72 lg:block;
+  }
+
+  .topbar-content {
+    @apply flex h-full items-center justify-end gap-4 px-6;
+  }
+
   /* Search Component */
   .search {
     @apply flex w-full rounded-[16px] border border-white/10 bg-card/60 px-4 shadow-[0_12px_40px_rgba(15,23,42,0.6)] backdrop-blur-xl md:max-w-96 focus-within:outline-none focus-within:ring-0 focus-within:border-transparent focus-within:shadow-[0_0_0_2px_rgba(99,102,241,0.35)];
@@ -341,7 +426,7 @@
   }
 
   .sidebar-nav_element {
-    @apply flex-center p-16-semibold w-full whitespace-nowrap rounded-xl bg-transparent transition-all duration-300 hover:bg-white/5 hover:shadow-[0_18px_45px_rgba(15,23,42,0.65)];
+    @apply flex-center p-16-semibold w-full whitespace-nowrap rounded-xl bg-transparent transition-all duration-300 hover:bg-white/5 hover:shadow-[0_18px_45px_rgba(99,102,241,0.45)];
   }
 
   .sidebar-link {

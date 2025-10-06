@@ -7,8 +7,6 @@ import User from "../database/models/user.model";
 import Image from "../database/models/image.model";
 import { redirect } from "next/navigation";
 
-import { v2 as cloudinary } from "cloudinary";
-
 const populateUser = (query: any) =>
   query.populate({
     path: "author",
@@ -27,12 +25,26 @@ export async function addImage({ image, userId, path }: AddImageParams) {
       throw new Error("User not found");
     }
 
+    // Ensure isPublic is explicitly set to true or false
+    const isPublic = image.isPublic === true;
+
     const newImage = await Image.create({
       ...image,
       author: author._id,
+      isPublic: isPublic,
+      ...(isPublic ? { sharedAt: new Date() } : {}),
+    });
+
+    console.log("[addImage] Created image:", {
+      _id: newImage._id,
+      title: newImage.title,
+      isPublic: newImage.isPublic,
+      sharedAt: newImage.sharedAt,
     });
 
     revalidatePath(path);
+    revalidatePath("/");
+    revalidatePath("/profile");
 
     return JSON.parse(JSON.stringify(newImage));
   } catch (error) {
@@ -51,13 +63,39 @@ export async function updateImage({ image, userId, path }: UpdateImageParams) {
       throw new Error("Unauthorized or image not found");
     }
 
+    const { _id, ...imageData } = image;
+
+    // Ensure isPublic is explicitly set to true or false
+    const isPublic = imageData.isPublic === true;
+
+    // Set sharedAt if making public, or clear it if making private
+    const updateData = {
+      ...imageData,
+      isPublic: isPublic,
+      sharedAt: isPublic ? imageToUpdate.sharedAt || new Date() : null,
+    };
+
+    console.log("[updateImage] Updating with:", {
+      isPublic,
+      hasSharedAt: !!updateData.sharedAt,
+    });
+
     const updatedImage = await Image.findByIdAndUpdate(
       imageToUpdate._id,
-      image,
+      updateData,
       { new: true }
     );
 
+    console.log("[updateImage] Updated image:", {
+      _id: updatedImage?._id,
+      title: updatedImage?.title,
+      isPublic: updatedImage?.isPublic,
+      sharedAt: updatedImage?.sharedAt,
+    });
+
     revalidatePath(path);
+    revalidatePath("/");
+    revalidatePath("/profile");
 
     return JSON.parse(JSON.stringify(updatedImage));
   } catch (error) {
@@ -106,44 +144,30 @@ export async function getAllImages({
   try {
     await connectToDatabase();
 
-    cloudinary.config({
-      cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-      api_key: process.env.CLOUDINARY_API_KEY,
-      api_secret: process.env.CLOUDINARY_API_SECRET,
-      secure: true,
-    });
-
-    let expression = "folder=vistoria";
+    const filter: any = {
+      isPublic: true,
+    };
 
     if (searchQuery) {
-      expression += ` AND ${searchQuery}`;
-    }
-
-    const { resources } = await cloudinary.search
-      .expression(expression)
-      .execute();
-
-    const resourceIds = resources.map((resource: any) => resource.public_id);
-
-    let query = {};
-
-    if (searchQuery) {
-      query = {
-        publicId: {
-          $in: resourceIds,
-        },
-      };
+      filter.$or = [
+        { title: { $regex: searchQuery, $options: "i" } },
+        { prompt: { $regex: searchQuery, $options: "i" } },
+        { color: { $regex: searchQuery, $options: "i" } },
+        { tags: { $regex: searchQuery, $options: "i" } },
+      ];
     }
 
     const skipAmount = (Number(page) - 1) * limit;
 
-    const images = await populateUser(Image.find(query))
-      .sort({ updatedAt: -1 })
+    const images = await populateUser(Image.find(filter))
+      .sort({ sharedAt: -1, updatedAt: -1 })
       .skip(skipAmount)
       .limit(limit);
 
-    const totalImages = await Image.find(query).countDocuments();
-    const savedImages = await Image.find().countDocuments();
+    console.log("[getAllImages] found", images.length, "public images");
+
+    const totalImages = await Image.find(filter).countDocuments();
+    const savedImages = await Image.find({ isPublic: true }).countDocuments();
 
     return {
       data: JSON.parse(JSON.stringify(images)),
@@ -160,22 +184,35 @@ export async function getUserImages({
   limit = 9,
   page = 1,
   userId,
+  searchQuery = "",
 }: {
   limit?: number;
   page: number;
   userId: string;
+  searchQuery?: string;
 }) {
   try {
     await connectToDatabase();
 
+    const filter: any = { author: userId };
+
+    if (searchQuery) {
+      filter.$or = [
+        { title: { $regex: searchQuery, $options: "i" } },
+        { prompt: { $regex: searchQuery, $options: "i" } },
+        { color: { $regex: searchQuery, $options: "i" } },
+        { tags: { $regex: searchQuery, $options: "i" } },
+      ];
+    }
+
     const skipAmount = (Number(page) - 1) * limit;
 
-    const images = await populateUser(Image.find({ author: userId }))
+    const images = await populateUser(Image.find(filter))
       .sort({ updatedAt: -1 })
       .skip(skipAmount)
       .limit(limit);
 
-    const totalImages = await Image.find({ author: userId }).countDocuments();
+    const totalImages = await Image.find(filter).countDocuments();
 
     return {
       data: JSON.parse(JSON.stringify(images)),
